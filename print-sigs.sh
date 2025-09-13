@@ -19,7 +19,7 @@ JQ_PROG='
   | .[]
   | select(.type == "function")
   | [
-      "LendingPool",
+      "$contract.name",
       .name,
       (.inputs | map(.type + " " + .name) | join(", ")),
       (if .stateMutability == "view" or .stateMutability == "pure" then "external" else "external" end),
