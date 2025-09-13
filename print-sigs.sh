@@ -15,22 +15,17 @@ fi
 
 # jq program: output TSV rows: contract, name, params, visibility, mutability, modifiers, returns
 JQ_PROG='
-  .ast
-  | .nodes[]
-  | select(.nodeType == "ContractDefinition")
-  | . as $contract
-  | .nodes[]
-  | select(.nodeType == "FunctionDefinition")
+  .abi
+  | .[]
+  | select(.type == "function")
   | [
-      $contract.name,
+      "LendingPool",
       .name,
-      (.parameters.parameters | map(.typeDescriptions.typeString + " " + (.name // "")) | join(", ")),
-      .visibility,
+      (.inputs | map(.type + " " + .name) | join(", ")),
+      (if .stateMutability == "view" or .stateMutability == "pure" then "external" else "external" end),
       .stateMutability,
-      (if .modifiers | length > 0 then (.modifiers | map(.modifierName.name) | join(" ")) else "" end),
-      (if .returnParameters.parameters | length > 0
-       then (.returnParameters.parameters | map(.typeDescriptions.typeString + " " + (.name // "")) | join(", "))
-       else "" end)
+      "",
+      (if .outputs then (.outputs | map(.type + " " + .name) | join(", ")) else "" end)
     ]
   | @tsv
 '
@@ -104,4 +99,3 @@ for arg in "$@"; do
     done
   fi
 done
-
